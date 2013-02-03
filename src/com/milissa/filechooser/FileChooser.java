@@ -1,5 +1,6 @@
 package com.milissa.filechooser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.http.util.ByteArrayBuffer;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.MarshalBase64;
@@ -27,21 +27,14 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.milissa.androidwsaccess.R;
+import com.milissa.androidwsaccess.WSCaller;
 import com.milissa.bean.FileBean;
 
 public class FileChooser extends ListActivity {
 
-	// NAMESPACE is targetNamespace in the WSDL.
-	private static final String NAMESPACE = "http://ws.milissa.com/";
-	// URL is the URL of WSDL file.
-	private static final String URL = "http://192.168.0.14:8081/TesteWS/TestService?wsdl";
-	// SOAP_ACTION is NAMESPACE+METHOD_NAME
-	private static final String SOAP_ACTION = "http://ws.milissa.com/upload";
-	// METHOD_NAME is the operation name
-	private static final String METHOD_NAME = "upload";
-
 	private File currentDir;
 	private FileArrayAdapter adapter;
+	private WSCaller wscaller; 
 
 	private void fill(File file) {
 		File[]dirs = file.listFiles();
@@ -72,8 +65,6 @@ public class FileChooser extends ListActivity {
 	}
 
 	private void onFileClick(Option option) {
-		Toast.makeText(this, "File uploading: "+ option.getPath(), Toast.LENGTH_SHORT).show();
-
 		final Option finalOption = option;
 
 		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -82,92 +73,15 @@ public class FileChooser extends ListActivity {
 				switch (which){
 				case DialogInterface.BUTTON_POSITIVE:
 					//Yes button clicked
-					SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+					Toast.makeText(getApplicationContext(), "File uploading: "+ finalOption.getPath(), Toast.LENGTH_SHORT).show();
 
-					// inicio: arquivo
-					finalOption.getPath();
-
-					// pega informações do arquivo a ser enviado
 					File f = new File(finalOption.getPath());
-					String fullName = finalOption.getName();
-					int dotIndex = fullName.lastIndexOf('.');
-					String name = fullName.substring(0, dotIndex);
-					String type = fullName.substring(dotIndex+1, fullName.length());
-
-					try {
-						FileInputStream fis = new FileInputStream(f);
-						int length = fis.available();
-						Toast.makeText(getApplicationContext(), "File size: "+ length, Toast.LENGTH_SHORT).show();
-						byte[] b = new byte[10000];
-						ByteArrayBuffer byteArray = new ByteArrayBuffer(10000);
-						
-						// lê conteúdo do arquivo a ser enviado
-						int bytesRead;
-						while ((bytesRead = fis.read(b)) != -1) {
-							byteArray.append(b, 0, bytesRead);
-						}
-
-						// cria novo objeto a ser enviado
-						FileBean file = new FileBean();
-						file.setData(byteArray.toByteArray());
-						file.setName(name);
-						file.setType(type);
-
-						PropertyInfo pi = new PropertyInfo();
-						// propertyName DEVE ser o nome do parâmetro esperado pelo WS: propOrder do Upload.java
-						pi.setName("file"); 
-						pi.setValue(file);
-						pi.setType(FileBean.class);
-						request.addProperty(pi);
-
-						SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-						// mapeia o tipo complexo definido pelo usuário
-						envelope.addMapping(NAMESPACE, "fileBean", new FileBean().getClass());
-						// serializa o array de bytes
-						new MarshalBase64().register(envelope);
-
-						envelope.encodingStyle = SoapEnvelope.ENC;
-						envelope.bodyOut = request;
-						envelope.dotNet = false;
-						envelope.setOutputSoapObject(request);
-						envelope.implicitTypes= true;
-
-						HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
-						try {
-							androidHttpTransport.debug = true;
-							androidHttpTransport.call(SOAP_ACTION, envelope);
-							System.out.println(androidHttpTransport.requestDump);		    				
-							
-						    if (envelope.bodyIn instanceof SoapFault) {
-						        String faultstring = ((SoapFault) envelope.bodyIn).faultstring;
-						        String faultcode = ((SoapFault) envelope.bodyIn).faultcode;
-						        String faultactor = ((SoapFault) envelope.bodyIn).faultactor;
-						        StackTraceElement[] stack = ((SoapFault) envelope.bodyIn).getStackTrace();
-						        
-						        System.out.println("Fault:");
-						        System.out.println("faultcode: "+ faultcode);
-						        System.out.println("faultstring: "+ faultstring);
-						        System.out.println("faultactor: "+ faultactor);
-						        
-						        Exception e = new Exception();
-						        e.setStackTrace(stack);
-						        e.printStackTrace(System.err);
-						    } else {
-						        SoapObject resultsRequestSOAP = (SoapObject) envelope.bodyIn;
-						        System.out.println(String.valueOf(resultsRequestSOAP));
-								if (resultsRequestSOAP != null)
-									Toast.makeText(getApplicationContext(), "File uploaded!", Toast.LENGTH_SHORT).show();
-								else
-									Toast.makeText(getApplicationContext(), "An error has ocurred!", Toast.LENGTH_SHORT).show();
-						    }
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}		
-					// fim: arquivo
+					System.out.println("RESULT:");
+					SoapSerializationEnvelope envelope = wscaller.prepareEnvelope(f);
+					SoapObject result = wscaller.callWebService(envelope, WSCaller.UPLOAD_METHOD_NAME);
 					
+					System.out.println(result.toString());
+
 					break;
 				case DialogInterface.BUTTON_NEGATIVE:
 					//No button clicked
@@ -189,6 +103,8 @@ public class FileChooser extends ListActivity {
 		// inicia o diretório corrente no cartão SD
 		currentDir = new File(Environment.getExternalStorageDirectory().getPath());
 		fill(currentDir);
+		
+		wscaller = new WSCaller();
 	}
 
 	@Override

@@ -1,5 +1,10 @@
 package com.milissa.bean;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Hashtable;
 
 import org.ksoap2.serialization.KvmSerializable;
@@ -7,6 +12,8 @@ import org.ksoap2.serialization.MarshalBase64;
 import org.ksoap2.serialization.PropertyInfo;
 
 import android.util.Base64;
+import android.util.Base64InputStream;
+import android.util.Base64OutputStream;
 
 public class FileBean implements KvmSerializable {
 	
@@ -42,7 +49,38 @@ public class FileBean implements KvmSerializable {
 	public Object getProperty(int arg0) {
 		switch (arg0) {
 		case 0:
-			return data;
+			/*
+			ByteArrayInputStream bis = new ByteArrayInputStream(data);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[256];
+			
+			try {
+				int readBytes;
+				while ((readBytes = bis.read(buffer)) != -1) {
+					bos.write(Base64.encode(buffer, Base64.DEFAULT), 0, readBytes);
+				}
+				bis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			return bos.toByteArray();*/
+			ByteArrayInputStream is = new ByteArrayInputStream(data);
+			byte[] buffer = new byte[256];
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			
+			try {
+				int readBytes;
+				while ((readBytes = is.read(buffer)) != -1) {
+					os.write(buffer, 0, readBytes);
+				}
+				is.close();
+				os.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			return os.toByteArray();
 		case 1:
 			return name;
 		case 2:
