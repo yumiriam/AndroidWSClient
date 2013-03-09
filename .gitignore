@@ -1,0 +1,3 @@
+# Ignoring binary files
+*.class
+*.war
