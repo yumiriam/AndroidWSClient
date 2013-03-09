@@ -2,9 +2,7 @@ package com.milissa.bean;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Hashtable;
 
 import org.ksoap2.serialization.KvmSerializable;
@@ -12,14 +10,12 @@ import org.ksoap2.serialization.MarshalBase64;
 import org.ksoap2.serialization.PropertyInfo;
 
 import android.util.Base64;
-import android.util.Base64InputStream;
-import android.util.Base64OutputStream;
 
 public class FileBean implements KvmSerializable {
 	
 	private byte[] data;
+	private String description;
 	private String name;
-	private String type;
 
 	public byte[] getData() {
 		return data;
@@ -37,34 +33,18 @@ public class FileBean implements KvmSerializable {
 		this.name = name;
 	}
 
-	public String getType() {
-		return type;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	
 	@Override
 	public Object getProperty(int arg0) {
 		switch (arg0) {
 		case 0:
-			/*
-			ByteArrayInputStream bis = new ByteArrayInputStream(data);
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			byte[] buffer = new byte[256];
-			
-			try {
-				int readBytes;
-				while ((readBytes = bis.read(buffer)) != -1) {
-					bos.write(Base64.encode(buffer, Base64.DEFAULT), 0, readBytes);
-				}
-				bis.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			return bos.toByteArray();*/
 			ByteArrayInputStream is = new ByteArrayInputStream(data);
 			byte[] buffer = new byte[256];
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -82,9 +62,9 @@ public class FileBean implements KvmSerializable {
 			
 			return os.toByteArray();
 		case 1:
-			return name;
+			return description;
 		case 2:
-			return type;
+			return name;
 		}
 		return null;
 	}
@@ -102,12 +82,12 @@ public class FileBean implements KvmSerializable {
         	arg2.name = "data";
             break;
         case 1:
-        	arg2.type = PropertyInfo.STRING_CLASS;
-        	arg2.name = "name";
+            arg2.type = PropertyInfo.STRING_CLASS;
+            arg2.name = "description";
             break;
         case 2:
-            arg2.type = PropertyInfo.STRING_CLASS;
-            arg2.name = "type";
+        	arg2.type = PropertyInfo.STRING_CLASS;
+        	arg2.name = "name";
             break;
         default:
         	break;
@@ -121,11 +101,11 @@ public class FileBean implements KvmSerializable {
 			this.data = Base64.decode(arg1.toString(), Base64.DEFAULT);
 			break;
 		case 1:
-			this.type = arg1.toString();
+			this.description = arg1.toString();
 			break;
 		case 2:
 			this.name = arg1.toString();
 			break;
-		}
+		}	
 	}
 }

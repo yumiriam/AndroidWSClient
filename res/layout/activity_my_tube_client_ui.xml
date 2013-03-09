@@ -40,6 +40,33 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <TextView
+        android:id="@+id/textFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/textFileName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#124578"
+        android:color="#124578" />
+
+    <TextView
+        android:id="@+id/textDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/editDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textMultiLine" />
+
     <Button
         android:id="@+id/buttonUpload"
         android:layout_width="match_parent"

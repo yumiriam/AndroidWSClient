@@ -1,20 +1,9 @@
 package com.milissa.filechooser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.ksoap2.SoapEnvelope;
-import org.ksoap2.SoapFault;
-import org.ksoap2.serialization.MarshalBase64;
-import org.ksoap2.serialization.PropertyInfo;
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -24,17 +13,14 @@ import android.os.Environment;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import com.milissa.androidwsaccess.MyTubeClient;
 import com.milissa.androidwsaccess.R;
-import com.milissa.androidwsaccess.WSCaller;
-import com.milissa.bean.FileBean;
 
 public class FileChooser extends ListActivity {
 
 	private File currentDir;
 	private FileArrayAdapter adapter;
-	private WSCaller wscaller; 
 
 	private void fill(File file) {
 		File[]dirs = file.listFiles();
@@ -73,18 +59,15 @@ public class FileChooser extends ListActivity {
 				switch (which){
 				case DialogInterface.BUTTON_POSITIVE:
 					//Yes button clicked
-					Toast.makeText(getApplicationContext(), "File uploading: "+ finalOption.getPath(), Toast.LENGTH_SHORT).show();
-
 					File f = new File(finalOption.getPath());
-					System.out.println("RESULT:");
-					SoapSerializationEnvelope envelope = wscaller.prepareEnvelope(f);
-					SoapObject result = wscaller.callWebService(envelope, WSCaller.UPLOAD_METHOD_NAME);
-					
-					System.out.println(result.toString());
-
+					MyTubeClient app = (MyTubeClient) getApplication();
+					app.setChosenFile(f);
+					setResult(RESULT_OK);
+					finish();
 					break;
 				case DialogInterface.BUTTON_NEGATIVE:
-					//No button clicked
+					setResult(RESULT_CANCELED);
+					finish();
 					break;
 				}
 			}
@@ -104,7 +87,6 @@ public class FileChooser extends ListActivity {
 		currentDir = new File(Environment.getExternalStorageDirectory().getPath());
 		fill(currentDir);
 		
-		wscaller = new WSCaller();
 	}
 
 	@Override
